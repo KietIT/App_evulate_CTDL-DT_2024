@@ -1,0 +1,87 @@
+{% extends "base.html"%}
+
+{% block title %}
+    Hỏi đáp
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Đặt câu hỏi ở đây</h1>
+
+    <div class="mt-5">
+        <div id="conversation" class="mb-3">
+            <!-- Initial message (optional) -->
+            <div class="bot-message">Xin chào! Tôi có thể giúp gì cho bạn?</div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <textarea id="questionBox" class="form-control mb-3" placeholder="Nhập câu hỏi..." style="height: 50px;"></textarea>
+        <button class="btn btn-primary btn-block" onclick="submitQuestion()">Submit</button>
+    </div>
+</div>
+
+<script>
+    function submitQuestion() {
+        const question = document.getElementById('questionBox').value; // lấy câu hỏi từ ô input
+        if (!question) return; // ko có câu hỏi thì dừng lại
+
+        // hiển thị câu hỏi của người dùng
+        displayMessage(question, 'user-message');
+        document.getElementById('questionBox').value = ''; // xóa nội dung trong ô input sau khi đã lấy câu hỏi
+
+        fetch('/hoidap', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question: question }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayMessage(data.answer, 'bot-message');
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function displayMessage(message, messageClass) {
+        const conversation = document.getElementById('conversation');
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add(messageClass);
+        messageDiv.textContent = message;
+        conversation.appendChild(messageDiv);
+        conversation.scrollTop = conversation.scrollHeight; // Auto-scroll to bottom
+    }
+</script>
+
+<style>
+    .user-message {
+        background-color: #ffffff; /* nền trắng */
+        color: #000000; /* chữ đen */
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        align-self: flex-end; /* Align to the right */
+    }
+    
+    .bot-message {
+        background-color: #ffffff; /* Light gray */
+        color: #000000;
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        align-self: flex-start; /* canh lề trái */
+        margin-left: 5px; /* Add left margin for bot-message */
+        margin-right: 5px; /* Thêm lề phải cho khung bot-message */
+    }
+    
+    #conversation {
+        display: flex;
+        flex-direction: column;
+        height: 300px; 
+        overflow-y: auto;
+        padding: 5px; /* Add padding to the container */
+        flex-grow: 1;
+    }
+</style>
+{% endblock %}
